@@ -28,7 +28,7 @@ def main():
     # data_size = int(bytes.decode(c.recv(8).rstrip(b'\xfe')).strip('\x00'))
     # print(data_size)
     # print("Size of data from beacon: " + str(data_size))
-    print("Got data from beacon: ")
+    # print("Got data from beacon: ")
     data_recv = bytes.decode(c.recv(1))
     while 1:
       data = c.recv(1)
@@ -38,7 +38,8 @@ def main():
     print(data_recv)
 
     strToSend = input("> ")
-    binCommand = strToSend.encode("utf-8")
+    binCommand = (strToSend.ljust(1024, '\0')).encode("utf-8")
+    # print("Command len: " + str(len(binCommand)))
     c.send(binCommand, len(binCommand))
 
     if (not strToSend == 'quit'):
