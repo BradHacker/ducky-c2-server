@@ -25,42 +25,30 @@ def main():
     c, addr = s.accept()
     print("Beacon connected from:", addr)
 
-    data_size = int(bytes.decode(c.recv(8).rstrip(b'\xfe')).strip('\x00'))
+    # data_size = int(bytes.decode(c.recv(8).rstrip(b'\xfe')).strip('\x00'))
     # print(data_size)
-    print("Size of data from beacon: " + str(data_size))
-    print("Got data from beacon: " + bytes.decode(c.recv(data_size)))
+    # print("Size of data from beacon: " + str(data_size))
+    print("Got data from beacon: ")
+    data_recv = bytes.decode(c.recv(1))
+    while 1:
+      data = c.recv(1)
+      if (data == b'\xff'):
+        break
+      data_recv += bytes.decode(data)
+    print(data_recv)
 
     strToSend = input("> ")
-    binCommand = strToSend.ljust(1024, '\0').encode("utf-8")
-    # print("Len of binCommand: " + str(len(binCommand)))
+    binCommand = strToSend.encode("utf-8")
     c.send(binCommand, len(binCommand))
 
-    total_data = []
-    begin = time.time()
-    timeout = 2
-    while 1:
-      # print("waiting for data...")
-      if total_data and time.time() - begin > timeout:
-        break
-      elif time.time() - begin > timeout * 2:
-        break
-
-      try:
-        d_size = int(bytes.decode(c.recv(8).rstrip(b'\xfe')).strip('\x00'))
-        data = c.recv(d_size)
-        if data:
-          # print(data)
-          if bytes.decode(data) == 'eof':
-            break
-          total_data.append(bytes.decode(data))
-          begin = time.time()
-        else:
-          time.sleep(0.1)
-      except:
-        pass
-    
-    output = ''.join(total_data)
-    print(output)
+    if (not strToSend == 'quit'):
+      output = bytes.decode(c.recv(1))
+      while 1:
+        data = c.recv(1)
+        if (data == b'\xff'):
+          break
+        output += bytes.decode(data)
+      print(output)
     
     c.close()
 
